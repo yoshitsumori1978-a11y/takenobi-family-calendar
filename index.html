@@ -44,20 +44,21 @@ body{font-family:'Hiragino Sans','Yu Gothic UI',sans-serif;background:var(--bg);
 .cal-nav button{background:var(--accent);color:#fff;border:none;padding:8px 14px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;}
 .cal-nav button:hover{background:#7A6850;}
 .cal-month{font-size:18px;font-weight:700;flex:1;text-align:center;}
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;background:var(--border);border:1px solid var(--border);border-radius:8px;overflow:hidden;}
-.cal-head{background:#5D4E37;color:#fff;padding:8px 4px;text-align:center;font-size:12px;font-weight:600;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;background:var(--border);border:2px solid var(--border);border-radius:10px;overflow:hidden;}
+.cal-head{background:#5D4E37;color:#fff;padding:12px 4px;text-align:center;font-size:15px;font-weight:700;letter-spacing:1px;}
 .cal-head.sun{background:#8B3A3A;}
 .cal-head.sat{background:#3A5A8B;}
-.cal-cell{background:#fff;min-height:88px;padding:4px;font-size:11px;position:relative;cursor:pointer;}
+.cal-cell{background:#fff;min-height:120px;padding:6px;font-size:12px;position:relative;cursor:pointer;transition:background 0.15s;}
 .cal-cell:hover{background:#F9F7F1;}
 .cal-cell.empty{background:#F5F1E8;cursor:default;}
-.cal-cell.today{background:#FFF8E1;border:2px solid var(--gold);}
+.cal-cell.today{background:#FFF8E1;border:3px solid var(--gold);box-shadow:inset 0 0 0 1px var(--gold);}
 .cal-cell.sun .day-num{color:#C62828;}
 .cal-cell.sat .day-num{color:#1565C0;}
 .cal-cell.holiday{background:var(--holiday-bg);}
 .cal-cell.holiday .day-num{color:var(--holiday);font-weight:700;}
-.day-num{font-weight:700;font-size:13px;margin-bottom:2px;}
-.ev{display:block;font-size:10px;padding:2px 4px;margin-bottom:1px;border-radius:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.3;}
+.day-num{font-weight:700;font-size:16px;margin-bottom:4px;}
+.cell-photo-mark{position:absolute;top:4px;right:4px;font-size:14px;}
+.ev{display:block;font-size:11px;padding:3px 5px;margin-bottom:2px;border-radius:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.4;font-weight:500;}
 .ev.kotaro{background:var(--kotaro-bg);color:var(--kotaro);border-left:2px solid var(--kotaro);}
 .ev.yuna{background:var(--yuna-bg);color:var(--yuna);border-left:2px solid var(--yuna);}
 .ev.nanami{background:var(--nanami-bg);color:var(--nanami);border-left:2px solid var(--nanami);}
@@ -77,6 +78,14 @@ body{font-family:'Hiragino Sans','Yu Gothic UI',sans-serif;background:var(--bg);
 .modal-ev-item.holiday{background:var(--holiday-bg);border-left:3px solid var(--holiday);}
 .modal-ev-item.lesson{background:#FFF3E0;border-left:3px solid #E65100;}
 .modal-ev-item .who{font-size:11px;font-weight:700;display:inline-block;margin-right:6px;padding:2px 6px;border-radius:3px;background:rgba(255,255,255,0.6);}
+.modal-ev-photo{margin-top:8px;}
+.modal-ev-photo img{max-width:100%;max-height:240px;border-radius:8px;display:block;border:1px solid var(--border);}
+.ev-photo-preview{margin-top:8px;display:flex;align-items:center;gap:10px;}
+.ev-photo-preview img{max-width:100px;max-height:100px;border-radius:6px;border:1px solid var(--border);}
+.photo-input-row{display:flex;gap:8px;align-items:center;margin-top:6px;}
+.photo-input-btn{padding:8px 14px;border:1.5px dashed var(--border);background:#FAFAFA;border-radius:6px;cursor:pointer;font-size:13px;color:var(--text-dim);}
+.photo-input-btn:hover{border-color:var(--gold);background:#FFFBEF;color:var(--accent);}
+.photo-clear-btn{background:none;border:1px solid var(--holiday);color:var(--holiday);padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer;}
 /* Lesson fees */
 .kid-section{margin-bottom:24px;border:1px solid var(--border);border-radius:10px;overflow:hidden;}
 .kid-header{padding:12px 16px;font-weight:700;font-size:15px;color:#fff;display:flex;justify-content:space-between;align-items:center;}
@@ -205,7 +214,34 @@ body{font-family:'Hiragino Sans','Yu Gothic UI',sans-serif;background:var(--bg);
         <label>予定</label>
         <input type="text" id="addEvTitle" placeholder="例：歯医者・誕生日・参観日など">
       </div>
+      <div class="q-form-row">
+        <label>📷 写真</label>
+        <div>
+          <div class="photo-input-row">
+            <label class="photo-input-btn">
+              📸 カメラで撮影
+              <input type="file" accept="image/*" capture="environment" id="addEvPhotoCamera" onchange="handleEventPhoto(event)" style="display:none;">
+            </label>
+            <label class="photo-input-btn">
+              🖼️ 写真を選択
+              <input type="file" accept="image/*" id="addEvPhotoFile" onchange="handleEventPhoto(event)" style="display:none;">
+            </label>
+          </div>
+          <div id="evPhotoPreview"></div>
+        </div>
+      </div>
       <button class="btn btn-primary" onclick="addCustomEvent()">予定を追加</button>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">📷 写真アルバム（子供別）</div>
+      <div style="margin-bottom:10px;font-size:12px;">
+        <button class="btn btn-secondary" onclick="filterAlbum('all',this)">すべて</button>
+        <button class="btn btn-secondary" onclick="filterAlbum('kotaro',this)">航太朗</button>
+        <button class="btn btn-secondary" onclick="filterAlbum('yuna',this)">優奈</button>
+        <button class="btn btn-secondary" onclick="filterAlbum('nanami',this)">菜々美</button>
+      </div>
+      <div id="albumGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;"></div>
     </div>
   </div>
 
@@ -496,7 +532,7 @@ function switchTab(name,btn){
   document.getElementById('tab-'+name).style.display='block';
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   btn.classList.add('active');
-  if(name==='cal')renderCalendar();
+  if(name==='cal'){renderCalendar();renderAlbum();}
   if(name==='fee')renderLessons();
   if(name==='q')renderQuestions();
   if(name==='set')loadKidInfoToForm();
@@ -520,7 +556,7 @@ function getEventsForDate(dateStr){
     NANAMI_EVENTS.filter(e=>e.d===dateStr).forEach(e=>evs.push({kid:'nanami',title:e.t,holiday:e.h===1}));
   }
   state.customEvents.filter(e=>e.date===dateStr&&state.visibleKids[e.kid]).forEach(e=>{
-    evs.push({kid:e.kid,title:e.title,custom:true,id:e.id});
+    evs.push({kid:e.kid,title:e.title,custom:true,id:e.id,photo:e.photo});
   });
   // Lessons for the day-of-week
   const dt=new Date(dateStr);
@@ -546,13 +582,19 @@ function renderCalendar(){
   document.getElementById('calMonth').textContent=`${y}年 ${m}月`;
   const first=new Date(y,m-1,1);
   const last=new Date(y,m,0);
-  const startDow=first.getDay();
+  // 月曜始まり: getDay()は日=0 月=1 ... 土=6 → 月=0..日=6 に変換
+  const rawDow=first.getDay();
+  const startDow=(rawDow+6)%7;
   const daysInMonth=last.getDate();
   const today=new Date();
   let html='';
-  ['日','月','火','水','木','金','土'].forEach((d,i)=>{
-    const cls=i===0?'sun':i===6?'sat':'';
-    html+=`<div class="cal-head ${cls}">${d}</div>`;
+  // 月曜始まりヘッダー
+  const headLabels=[
+    {l:'月',cls:''},{l:'火',cls:''},{l:'水',cls:''},{l:'木',cls:''},
+    {l:'金',cls:''},{l:'土',cls:'sat'},{l:'日',cls:'sun'}
+  ];
+  headLabels.forEach(h=>{
+    html+=`<div class="cal-head ${h.cls}">${h.l}</div>`;
   });
   for(let i=0;i<startDow;i++)html+='<div class="cal-cell empty"></div>';
   for(let day=1;day<=daysInMonth;day++){
@@ -561,6 +603,7 @@ function renderCalendar(){
     const isToday=today.getFullYear()===y&&today.getMonth()+1===m&&today.getDate()===day;
     const evs=getEventsForDate(dateStr);
     const hasHoliday=evs.some(e=>e.holiday);
+    const hasPhoto=state.customEvents.some(e=>e.date===dateStr&&e.photo&&state.visibleKids[e.kid]);
     let cls='cal-cell';
     if(dow===0)cls+=' sun';
     if(dow===6)cls+=' sat';
@@ -572,12 +615,14 @@ function renderCalendar(){
       let evCls=e.kid;
       if(e.holiday)evCls='holiday';
       else if(e.lesson)evCls='lesson';
-      evHtml+=`<span class="ev ${evCls}" title="${e.title}">${e.title}</span>`;
+      const photoMark=e.custom&&e.photo?'📷 ':'';
+      evHtml+=`<span class="ev ${evCls}" title="${escapeHtml(e.title)}">${photoMark}${escapeHtml(e.title)}</span>`;
     });
     if(evs.length>maxShow){
       evHtml+=`<span class="ev-more">＋${evs.length-maxShow}件</span>`;
     }
-    html+=`<div class="${cls}" onclick="openDayModal('${dateStr}')"><div class="day-num">${day}</div>${evHtml}</div>`;
+    const photoIcon=hasPhoto?'<span class="cell-photo-mark">📷</span>':'';
+    html+=`<div class="${cls}" onclick="openDayModal('${dateStr}')">${photoIcon}<div class="day-num">${day}</div>${evHtml}</div>`;
   }
   document.getElementById('calGrid').innerHTML=html;
 }
@@ -608,7 +653,7 @@ function openDayModal(dateStr){
   YUNA_EVENTS.filter(e=>e.d===dateStr).forEach(e=>evs.push({kid:'yuna',title:e.t,holiday:e.h===1}));
   NANAMI_EVENTS.filter(e=>e.d===dateStr).forEach(e=>evs.push({kid:'nanami',title:e.t,holiday:e.h===1}));
   state.customEvents.filter(e=>e.date===dateStr).forEach(e=>{
-    evs.push({kid:e.kid,title:e.title,custom:true,id:e.id});
+    evs.push({kid:e.kid,title:e.title,custom:true,id:e.id,photo:e.photo});
   });
   const dt=new Date(dateStr);
   const dow=dt.getDay();
@@ -631,8 +676,17 @@ function openDayModal(dateStr){
       let cls=e.kid;
       if(e.holiday)cls='holiday';
       else if(e.lesson)cls='lesson';
-      const removeBtn=e.custom?`<button class="btn btn-danger" style="float:right;" onclick="removeCustomEvent('${e.id}')">削除</button>`:'';
-      html+=`<div class="modal-ev-item ${cls}"><span class="who">${KID_LABELS[e.kid]||''}</span>${e.title}${removeBtn}</div>`;
+      let actionBtns='';
+      if(e.custom){
+        actionBtns=`<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">`;
+        if(e.photo){
+          actionBtns+=`<button class="photo-clear-btn" onclick="removeEventPhoto('${e.id}')">📷 写真だけ削除</button>`;
+        }
+        actionBtns+=`<button class="btn btn-danger" onclick="removeCustomEvent('${e.id}')">🗑️ この予定を削除</button>`;
+        actionBtns+=`</div>`;
+      }
+      const photoHtml=e.photo?`<div class="modal-ev-photo"><img src="${e.photo}" alt="写真"></div>`:'';
+      html+=`<div class="modal-ev-item ${cls}"><span class="who">${KID_LABELS[e.kid]||''}</span>${escapeHtml(e.title)}${photoHtml}${actionBtns}</div>`;
     });
   }
   document.getElementById('modalContent').innerHTML=html;
@@ -650,23 +704,114 @@ function addEventForModalDay(){
   document.getElementById('addEvTitle').focus();
 }
 
+// 写真圧縮（最大800px・JPEG 0.8品質）
+function compressImage(file,maxSize){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=()=>{
+      const img=new Image();
+      img.onload=()=>{
+        let w=img.width,h=img.height;
+        if(w>h&&w>maxSize){h=Math.round(h*maxSize/w);w=maxSize;}
+        else if(h>maxSize){w=Math.round(w*maxSize/h);h=maxSize;}
+        const canvas=document.createElement('canvas');
+        canvas.width=w;canvas.height=h;
+        const ctx=canvas.getContext('2d');
+        ctx.drawImage(img,0,0,w,h);
+        resolve(canvas.toDataURL('image/jpeg',0.8));
+      };
+      img.onerror=reject;
+      img.src=reader.result;
+    };
+    reader.onerror=reject;
+    reader.readAsDataURL(file);
+  });
+}
+async function handleEventPhoto(e){
+  const file=e.target.files[0];
+  if(!file)return;
+  try{
+    const compressed=await compressImage(file,800);
+    state._pendingPhoto=compressed;
+    document.getElementById('evPhotoPreview').innerHTML=
+      `<div class="ev-photo-preview"><img src="${compressed}" alt="プレビュー"><button class="photo-clear-btn" onclick="clearPendingPhoto()">写真を取り消し</button></div>`;
+  }catch(err){
+    alert('写真の読み込みに失敗しました：'+err.message);
+  }
+}
+function clearPendingPhoto(){
+  state._pendingPhoto=null;
+  document.getElementById('evPhotoPreview').innerHTML='';
+  document.getElementById('addEvPhotoCamera').value='';
+  document.getElementById('addEvPhotoFile').value='';
+}
 function addCustomEvent(){
   const kid=document.getElementById('addEvKid').value;
   const date=document.getElementById('addEvDate').value;
   const title=document.getElementById('addEvTitle').value.trim();
   if(!date||!title){alert('日付と予定を入力してください');return;}
-  state.customEvents.push({id:'c'+Date.now(),kid:kid,date:date,title:title});
-  saveState();
+  const ev={id:'c'+Date.now(),kid:kid,date:date,title:title};
+  if(state._pendingPhoto)ev.photo=state._pendingPhoto;
+  state.customEvents.push(ev);
+  try{saveState();}catch(err){
+    if(err.name==='QuotaExceededError'){
+      alert('保存容量がいっぱいです。古い写真を削除してください。');
+      state.customEvents.pop();
+      return;
+    }
+    throw err;
+  }
   renderCalendar();
+  renderAlbum();
   document.getElementById('addEvTitle').value='';
-  alert('予定を追加しました');
+  clearPendingPhoto();
+  alert('予定を追加しました'+(ev.photo?'（写真付き）':''));
 }
 function removeCustomEvent(id){
   if(!confirm('この予定を削除しますか？'))return;
   state.customEvents=state.customEvents.filter(e=>e.id!==id);
   saveState();
   renderCalendar();
+  renderAlbum();
   if(state.modalDate)openDayModal(state.modalDate);
+}
+function removeEventPhoto(id){
+  if(!confirm('この予定の写真だけ削除しますか？（予定本体は残ります）'))return;
+  const ev=state.customEvents.find(e=>e.id===id);
+  if(!ev)return;
+  delete ev.photo;
+  saveState();
+  renderCalendar();
+  renderAlbum();
+  if(state.modalDate)openDayModal(state.modalDate);
+}
+// アルバム
+function renderAlbum(){
+  const grid=document.getElementById('albumGrid');
+  if(!grid)return;
+  const filter=state.albumFilter||'all';
+  const photoEvs=state.customEvents.filter(e=>e.photo&&(filter==='all'||e.kid===filter)).sort((a,b)=>b.date.localeCompare(a.date));
+  if(photoEvs.length===0){
+    grid.innerHTML='<div class="empty-msg" style="grid-column:1/-1;">写真付きの予定はありません</div>';
+    return;
+  }
+  let html='';
+  photoEvs.forEach(e=>{
+    html+=`<div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;background:#fff;">
+      <img src="${e.photo}" style="width:100%;height:120px;object-fit:cover;cursor:pointer;" onclick="openDayModal('${e.date}')">
+      <div style="padding:8px;font-size:11px;">
+        <div><span class="q-tag ${e.kid}" style="font-size:10px;padding:1px 6px;">${escapeHtml(KID_LABELS[e.kid]||'')}</span></div>
+        <div style="font-weight:600;margin-top:4px;line-height:1.3;">${escapeHtml(e.title)}</div>
+        <div style="color:var(--text-dim);margin-top:2px;">${e.date}</div>
+        <button class="btn btn-danger" style="margin-top:6px;width:100%;font-size:10px;padding:3px;" onclick="removeEventPhoto('${e.id}')">📷 写真削除</button>
+      </div>
+    </div>`;
+  });
+  grid.innerHTML=html;
+}
+function filterAlbum(f,btn){
+  state.albumFilter=f;
+  renderAlbum();
 }
 
 // ============================================================
@@ -926,6 +1071,7 @@ document.querySelectorAll('.kid-chip').forEach(c=>{
 const t=new Date();
 document.getElementById('addEvDate').value=`${t.getFullYear()}-${pad(t.getMonth()+1)}-${pad(t.getDate())}`;
 renderCalendar();
+renderAlbum();
 </script>
 </body>
 </html>
